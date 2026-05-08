@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>大正バトル</title>
+
+<style>
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+/* 共通画面 */
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* スタート画面 */
+#startScreen {
+    background: black;
+    color: white;
+}
+
+/* ルール画面 */
+#ruleScreen {
+    background: #222;
+    color: white;
+    display: none;
+}
+
+/* ゲーム画面 */
+#game {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: linear-gradient(#8b5a2b, #2b1a0f);
+}
+
+/* UI */
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    color: white;
+    z-index: 999;
+}
+
+/* スコア */
+#score {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+/* キャラ */
+.character {
+    position: absolute;
+    width: 80px;
+    height: 120px;
+    cursor: pointer;
+}
+
+/* 顔 */
+.head {
+    width: 60px;
+    height: 60px;
+    margin: auto;
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+/* 新選組 */
+.shinsengumi .head {
+    background-image: url("./images/shinsengumi_face.png");
+}
+
+.shinsengumi .body {
+    background: #4dabf7;
+}
+
+/* 敵 */
+.villain .head {
+    background-image: url("./images/villain_face.png");
+}
+
+.villain .body {
+    background: black;
+}
+
+/* 体 */
+.body {
+    width: 60px;
+    height: 70px;
+    margin: auto;
+    border-radius: 10px;
+}
+
+/* ボタン */
+button {
+    padding: 15px 30px;
+    font-size: 20px;
+    margin-top: 20px;
+    cursor: pointer;
+}
+
+/* 終了画面 */
+#endScreen {
+    display: none;
+    background: black;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<!-- スタート画面 -->
+<div id="startScreen" class="screen">
+    <h1>大正バトル</h1>
+    <button onclick="showRule()">スタート</button>
+</div>
+
+<!-- ルール画面 -->
+<div id="ruleScreen" class="screen">
+    <h2>ルール</h2>
+    <p>・黒いやつをクリックして倒す！</p>
+    <p>・1体で10ポイント</p>
+    <p>・新選組を倒すとゲームオーバー</p>
+    <p>・500点でクリア！</p>
+    <button onclick="startGame()">ゲーム開始</button>
+</div>
+
+<!-- ゲーム画面 -->
+<div id="game">
+    <div id="ui">
+        Score: <span id="score">0</span>
+    </div>
+</div>
+
+<!-- 終了画面 -->
+<div id="endScreen" class="screen">
+    <h1 id="resultText"></h1>
+    <button onclick="location.reload()">もう一回</button>
+</div>
+
+<script>
+let score = 0;
+let gameInterval;
+
+/* 画面切替 */
+function showRule() {
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("ruleScreen").style.display = "flex";
+}
+
+/* ゲーム開始 */
+function startGame() {
+    document.getElementById("ruleScreen").style.display = "none";
+    document.getElementById("game").style.display = "block";
+
+    gameInterval = setInterval(spawn, 800);
+}
+
+/* キャラ生成 */
+function spawn() {
+
+    const c = document.createElement("div");
+    c.className = "character";
+
+    const isEnemy = Math.random() < 0.7;
+
+    if (isEnemy) {
+        c.classList.add("villain");
+    } else {
+        c.classList.add("shinsengumi");
+    }
+
+    /* ランダム位置 */
+    c.style.left =
+        Math.random() * (window.innerWidth - 80) + "px";
+
+    c.style.top =
+        Math.random() * (window.innerHeight - 120) + "px";
+
+    c.innerHTML = `
+        <div class="head"></div>
+        <div class="body"></div>
+    `;
+
+    /* クリック */
+    c.onclick = () => {
+
+        if (isEnemy) {
+
+            score += 10;
+
+            document.getElementById("score").textContent = score;
+
+            if (score >= 500) {
+                endGame("🎉 クリア！");
+            }
+
+        } else {
+
+            endGame("💀 ゲームオーバー");
+
+        }
+
+        c.remove();
+    };
+
+    document.getElementById("game").appendChild(c);
+
+    /* 2秒で消える */
+    setTimeout(() => {
+        c.remove();
+    }, 2000);
+}
+
+/* 終了 */
+function endGame(text) {
+
+    clearInterval(gameInterval);
+
+    document.getElementById("game").style.display = "none";
+
+    document.getElementById("endScreen").style.display = "flex";
+
+    document.getElementById("resultText").textContent = text;
+}
+</script>
+
+</body>
+</html>
